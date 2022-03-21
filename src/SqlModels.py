@@ -1,5 +1,6 @@
 from peewee import Model, SqliteDatabase, IntegerField, DoubleField, BooleanField, TextField
 
+
 class BasicModel(Model):
     class Meta:
         database = SqliteDatabase('sqlite3.db')

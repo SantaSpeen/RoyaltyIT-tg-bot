@@ -90,7 +90,7 @@ async def unmute(msg: types.Message):
     pass
 
 
-@dp.message_handler(regexp=r"\A(?:.|\/)(?:ban|заскамить)", is_chat_admin=True, chat_type=ChatType.SUPERGROUP)
+@dp.message_handler(regexp=r"\A(?:.|\/)(?:ban|бан)", is_chat_admin=True, chat_type=ChatType.SUPERGROUP)
 async def ban(msg: types.Message):
     reply_message = msg.reply_to_message
 

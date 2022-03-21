@@ -18,6 +18,7 @@ $ cd src
 # Install requirements
 $ python3 -m pip install -r requirements.txt
 # Create configuration file
+# Create sqlite database from src/sl3.sql
 # Then start the bot
 $ python3 main.py
 ```
