@@ -127,3 +127,13 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Ignore Idea dir
+.idea/
+
+# Ignore all db
+*.db
+
+# Ignore project files
+test_*.*
+*.json
