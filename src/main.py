@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import time
 
@@ -101,10 +102,27 @@ async def mute(msg: types.Message):
     if reply_message:
         warn_user = reply_message.from_user
         user_id = warn_user.id
-        await tools.set_user_permissions(user_id, msg.chat.id, mute_perm)
-
+        splt = msg.text.split(" ")[1:]
+        if len(splt) > 0:
+            c = time.time()
+            try:
+                for word in splt:
+                    word: str
+                    if word.endswith("d"):
+                        c += int(word[:len(word)-1]) * 24 * 60 * 60
+                    elif word.endswith("h"):
+                        c += int(word[:len(word)-1]) * 60 * 60
+                    elif word.endswith("m"):
+                        c += int(word[:len(word)-1]) * 60
+                    elif word.endswith("s"):
+                        c += int(word[:len(word)-1])
+                tools.set_mute(user_id, c)
+                await tools.set_user_permissions(user_id, msg.chat.id, mute_perm)
+            except Exception as e:
+                await msg.reply(f"Exception:  <code>{e}</code>", parse_mode=ParseMode.HTML)
+        else:
+            await msg.reply("Укажи время:  <code>/mute 1d 5h 10m 30s</code>", parse_mode=ParseMode.HTML)
     else:
-
         await msg.reply("Сначала надо выбрать пользователя.")
 
 
@@ -164,13 +182,13 @@ async def new_chat_member(msg: types.Message):
 @dp.message_handler(content_types=['text', 'photo', 'document', 'audio', 'sticker', 'animation', 'voice', 'video_note'])
 async def all_messages(msg: types.Message):
     global mute_all
-    text = msg.text.lower()
+    text = msg.text
     user_id = msg.from_user.id
     log.info(f"New message from {user_id}(@{msg.from_user.username}) in {msg.chat.id}: '{text}'; "
              f"Type: {msg.content_type}")
 
     if msg.chat.type in [ChatType.SUPERGROUP, ChatType.GROUP]:  # Если сообщение пришло из группы
-
+        asyncio.create_task(tools.fix_muted(unmute_perm))
         admins = await tools.admins
         if user_id in admins['ids']:
             if text == "суд идёт":

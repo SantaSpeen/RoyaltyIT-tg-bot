@@ -3,7 +3,7 @@ import time
 
 import aiogram
 from aiogram.types import ParseMode
-from peewee import DoesNotExist
+from peewee import DoesNotExist, ModelObjectCursorWrapper
 
 from SqlModels import Users, Mailing
 from config import Config
@@ -44,6 +44,16 @@ class Tools:
             user = Users(user_id=user_id)
         return user
 
+    async def fix_muted(self, unmute_perm):
+        users = Users().select().where(Users.muted_until <= time.time())
+        for user in users:
+            user.muted_until = None
+            user.save()
+            await self.set_user_permissions(user.user_id,
+                                            self.config.remote_chat,
+                                            unmute_perm)
+        # ModelObjectCursasdaorWrapper
+
     async def set_user_permissions(self, user_id, chat_id, permissions):
         try:
             await self.dispatcher.bot.restrict_chat_member(chat_id, user_id, permissions=permissions)
@@ -54,6 +64,12 @@ class Tools:
                                                    f"Exception: `{e}`",
                                                    parse_mode=ParseMode.MARKDOWN)
             return False
+
+    @classmethod
+    def set_mute(cls, user_id, until):
+        user = cls.get_user(user_id)
+        user.muted_until = until
+        user.save()
 
     async def kick_chat_member(self, chat_id, user_id):
         try:
@@ -101,6 +117,11 @@ class Tools:
         user = cls.get_user(user_id)
         return user.banned, user.ban_msg, user.ban_by
 
+    @classmethod
+    def is_muted(cls, user_id):
+        user = cls.get_user(user_id)
+        return False if user.muted_until == 0 else time.time() >= user.muted_until
+
     async def ban_user(self, msg: aiogram.types.Message):
         user = self.get_user(msg.reply_to_message.from_user.id)
 
@@ -122,3 +143,4 @@ class Tools:
             Mailing(user_id=user_id).save()
 
         return registered
+
