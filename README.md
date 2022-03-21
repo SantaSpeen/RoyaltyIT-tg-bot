@@ -28,8 +28,9 @@ $ python3 main.py
 ```json
 {
   "bot_token": "BOT_TOKEN",
-  "remote_chat": -1000,
+  "remote_chat": -123456789,
   "new_member_message": "Привет, @%(username)-s!\nДобро пожаловать в наше IT - сообщество.\nЧтобы люди могли в будущем найти тебя, напиши вступительное сообщение о себе с хештегом %(<)-s#знакомство%(</)-s. Приятного времяпрепровождения!",
+  "start_message": "start message",
   "static_message": {
     "help": "Я бот, ничем не могу помочь, сорян..."
   }
