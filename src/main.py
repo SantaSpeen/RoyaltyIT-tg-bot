@@ -2,7 +2,7 @@ import logging
 
 from aiogram import Bot, types
 from aiogram.dispatcher import Dispatcher
-from aiogram.types import ParseMode
+from aiogram.types import ParseMode, ChatType
 from aiogram.utils import executor
 
 from config import Config
@@ -16,9 +16,18 @@ dp = Dispatcher(bot)
 tools = Tools(config, dp)
 
 
+@dp.message_handler(commands=["start"], chat_type=ChatType.PRIVATE)
+async def start(msg: types.Message):
+    log.info(f"New message from {msg.from_user.id}(@{msg.from_user.username}) in {msg.chat.id}: '{msg.text}'")
+    user_id = msg.from_user.id
+    registered = tools.register_user(user_id)
+    if not registered:
+        await msg.reply(config.start_message)
+
+
 @dp.message_handler(commands=['admins'])
 async def bot_admins(msg: types.Message):
-    log.info(f"New message from {msg.from_user.id}({msg.from_user.username}) in {msg.chat.id}: '{msg.text}'")
+    log.info(f"New message from {msg.from_user.id}(@{msg.from_user.username}) in {msg.chat.id}: '{msg.text}'")
     message = "Администраторы нашего сообщества:\n%(owner)-s"
     admins = await tools.admins
     i = 1
@@ -35,9 +44,9 @@ async def bot_admins(msg: types.Message):
     await msg.reply(message, parse_mode=ParseMode.MARKDOWN)
 
 
-@dp.message_handler(regexp=r"\A(?:.|\/)(?:warn|пред)", is_chat_admin=True)
-async def wanrs(msg: types.Message):
-    log.info(f"New message from {msg.from_user.id}({msg.from_user.username}) in {msg.chat.id}: '{msg.text}'")
+@dp.message_handler(regexp=r"\A(?:.|\/)(?:warn|пред)", is_chat_admin=True, chat_type=ChatType.SUPERGROUP)
+async def wanr(msg: types.Message):
+    log.info(f"New message from {msg.from_user.id}(@{msg.from_user.username}) in {msg.chat.id}: '{msg.text}'")
     reply_message = msg.reply_to_message
 
     if reply_message:
@@ -50,12 +59,13 @@ async def wanrs(msg: types.Message):
     else:
         message = "Сначала надо выбрать пользователя."
 
-    await msg.reply(message, parse_mode=ParseMode.MARKDOWN)
+    if message:
+        await msg.reply(message)
 
 
-@dp.message_handler(regexp=r"\A(?:.|\/)(?:reset|прости)", is_chat_admin=True)
-async def unwarn(msg):
-    log.info(f"New message from {msg.from_user.id}({msg.from_user.username}) in {msg.chat.id}: '{msg.text}'")
+@dp.message_handler(regexp=r"\A(?:.|\/)(?:reset|прости)", is_chat_admin=True, chat_type=ChatType.SUPERGROUP)
+async def unwarn(msg: types.Message):
+    log.info(f"New message from {msg.from_user.id}(@{msg.from_user.username}) in {msg.chat.id}: '{msg.text}'")
     reply_message = msg.reply_to_message
 
     if reply_message:
@@ -63,14 +73,77 @@ async def unwarn(msg):
         user_id = warn_user.id
         user_username = warn_user.username
 
-        message = await tools.reset_warn(user_id, user_username)
+        message = tools.reset_warn(user_id, user_username)
     else:
         message = "Сначала надо выбрать пользователя."
 
     await msg.reply(message, parse_mode=ParseMode.MARKDOWN)
 
 
-tools.bind_static_messages()
+@dp.message_handler(regexp=r"\A(?:.|\/)(?:mute|тсс)", is_chat_admin=True, chat_type=ChatType.SUPERGROUP)
+async def mute(msg: types.Message):
+    pass
+
+
+@dp.message_handler(regexp=r"\A(?:.|\/)(?:unmute|говори)", is_chat_admin=True, chat_type=ChatType.SUPERGROUP)
+async def unmute(msg: types.Message):
+    pass
+
+
+@dp.message_handler(regexp=r"\A(?:.|\/)(?:ban|заскамить)", is_chat_admin=True, chat_type=ChatType.SUPERGROUP)
+async def ban(msg: types.Message):
+    reply_message = msg.reply_to_message
+
+    if reply_message:
+
+        if len(msg.text.split(" ")) > 1:
+            message = await tools.ban_user(msg)
+
+        else:
+            message = "Укажи причину бана:  `/ban [причина]`"
+
+    else:
+        message = "Сначала надо выбрать пользователя."
+
+    if message:
+        await msg.reply(message, parse_mode=ParseMode.MARKDOWN)
+
+
+@dp.message_handler(content_types=['new_chat_members'], chat_type=ChatType.SUPERGROUP)
+async def new_chat_member(msg: types.Message):
+    for user in msg.new_chat_members:
+        user_id = user['id']
+        log.info(f"New member: {user['id']}(@{user['username']})")
+        banned, ban_msg, ban_by = tools.is_banned(user_id)
+        if banned:
+            await bot.send_message(msg.chat.id,
+                                   f"@{user['username']}, вы забанены [Администратором](tg://user?id={ban_by})\n",
+                                   parse_mode=ParseMode.MARKDOWN)
+            await bot.kick_chat_member(msg.chat.id, user_id)
+        else:
+            message = config.new_member_message % {
+                "username": user['username'],
+                "<": "<code>",   # Start codeblock
+                "</": "</code>"  # Close codeblock
+            }
+            await bot.send_message(msg.chat.id, message, parse_mode=ParseMode.HTML)
+
+
+@dp.message_handler(content_types=['text', 'photo', 'document', 'audio', 'sticker', 'animation', 'voice', 'video_note'])
+async def all_messages(msg: types.Message):
+    text = msg.text
+    user_id = msg.from_user.id
+    log.info(f"New message from {user_id}(@{msg.from_user.username}) in {msg.chat.id}: '{text}'; "
+             f"Type: {msg.content_type}")
+
+    if msg.chat.type in [ChatType.SUPERGROUP, ChatType.GROUP]:  # Если сообщение пришло из группы
+        pass
+
+    for k, v in config.static_message.items():
+        if k == text[1:len(k) + 1]:
+            await msg.reply(config.static_message[k], parse_mode=ParseMode.MARKDOWN)
+            return
+
 
 if __name__ == '__main__':
     executor.start_polling(dp)

@@ -2,12 +2,11 @@ import logging
 import time
 
 import aiogram
+from aiogram.types import ParseMode
 from peewee import DoesNotExist
 
-from SqlModels import Users
+from SqlModels import Users, Mailing
 from config import Config
-
-static_log = logging.getLogger('static messages')
 
 
 class Tools:
@@ -18,35 +17,13 @@ class Tools:
         self.dispatcher = dispatcher
         self.__admins: dict = {}
 
-    @staticmethod
-    async def __message_handler(msg: aiogram.types.Message, **kwargs):
-        text = msg.text
-        static_log.info(f"New message from {msg.from_user.id}({msg.from_user.username}) in {msg.chat.id}: '{text}'")
-        for k, v in kwargs['__messages__'].items():
-            if k.startswith(text[1:len(k)]):
-                allow = v['allow']
-                send = False
-                if (allow == "all") or \
-                    (allow == "private" and msg.chat.id > 0) or \
-                    (allow == "chat" and msg.chat.id < 0):
-                    send = True
-                if send:
-                    await msg.reply(v['msg'])
-                break
-
-    def bind_static_messages(self):
-        __messages__: dict = self.config.raw_config['static_message']
-        __messages_keys__ = list(__messages__.keys())
-        l = lambda *x: self.__message_handler(*x, __messages__=__messages__)
-        self.dispatcher.register_message_handler(l, commands=__messages_keys__)
-
     async def _update_admins_list(self):
         admins = await self.dispatcher.bot.get_chat_administrators(self.config.remote_chat)
         ids = list()
         for admin in admins:
             ids.append(admin['user']['id'])
         self.__admins = {
-            "time": time.time()+60.0,
+            "time": time.time() + 60.0,
             "object": {"list": admins, "ids": ids}
         }
 
@@ -59,31 +36,46 @@ class Tools:
 
         return self.__admins['object']
 
-    async def add_warn(self, user_id, user_username, chat_id):
+    @staticmethod
+    def get_user(user_id):
         try:
             user = Users.get(Users.user_id == user_id)
         except DoesNotExist:
             user = Users(user_id=user_id)
+        return user
+
+    async def kick_chat_member(self, chat_id, user_id):
+        try:
+            await self.dispatcher.bot.kick_chat_member(chat_id, user_id)
+            return True
+        except Exception as e:
+            await self.dispatcher.bot.send_message(chat_id,
+                                                   f"Ошибка при исключении [пользователя](tg://user?id={user_id}).\n"
+                                                   f"Exception: `{e}`",
+                                                   parse_mode=ParseMode.MARKDOWN)
+            return False
+
+    async def add_warn(self, user_id, user_username, chat_id):
+        user = self.get_user(user_id)
         user.warns += 1
         user.save()
         if user.warns > 3:
-            try:
-                await self.dispatcher.bot.kick_chat_member(chat_id, user_id)
+
+            if await self.kick_chat_member(chat_id, user_id):
                 message = f"@{user_username} вёл себя плохо, поэтому теперь он иключён!"
-            except Exception as e:
-                message = f"Ошибка при исключении @{user_username}.\nException: `{e}`"
+            else:
+                message = None
+                user.warns = 0
+                user.save()
+
         else:
             message = f"@{user_username}, вы получили {user.warns} из 3 предупреждений.\nВпредь ведите себя лучше!"
 
         return message
 
     @classmethod
-    async def reset_warn(cls, user_id, username):
-        try:
-            user = Users.get(Users.user_id == user_id)
-        except DoesNotExist:
-            user = Users(user_id=user_id)
-
+    def reset_warn(cls, user_id, username):
+        user = cls.get_user(user_id)
         if user.warns == 0:
             message = f"У пользователя @{username} нет предупреждений!"
         else:
@@ -92,3 +84,30 @@ class Tools:
             user.save()
 
         return message
+
+    @classmethod
+    def is_banned(cls, user_id):
+        user = cls.get_user(user_id)
+        return user.banned, user.ban_msg, user.ban_by
+
+    async def ban_user(self, msg: aiogram.types.Message):
+        user = self.get_user(msg.reply_to_message.from_user.id)
+
+        if await self.kick_chat_member(msg.chat.id, user.user_id):
+            user.banned = True
+            user.ban_msg = " ".join(msg.text.split(" ")[1:])
+            user.ban_by = msg.from_user.id
+            user.save()
+            return f"@{msg.reply_to_message.from_user.username} был забанен по причие `{user.ban_msg}`."
+
+    @classmethod
+    def register_user(cls, user_id):
+        registered = False
+        cls.get_user(user_id).save()
+        try:
+            Mailing.get(Mailing.user_id == user_id)
+            registered = True
+        except DoesNotExist:
+            Mailing(user_id=user_id).save()
+
+        return registered

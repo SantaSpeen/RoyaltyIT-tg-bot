@@ -19,6 +19,9 @@ class Config:
         self.remote_chat: int = None
 
         self.messages_object: str = None
+        self.new_member_message: str = None
+        self.start_message: str = None
+        self.static_message: dict = None
 
         self._read_config()
 
@@ -34,3 +37,6 @@ class Config:
         self.bot_token = self.raw_config.get("bot_token")
         self.remote_chat = self.raw_config.get("remote_chat")
         self.messages_object = self.raw_config.get("messages")
+        self.new_member_message = self.raw_config.get("new_member_message")
+        self.start_message = self.raw_config.get("start_message")
+        self.static_message = self.raw_config.get("static_message")
