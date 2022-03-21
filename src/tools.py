@@ -98,7 +98,7 @@ class Tools:
             user.ban_msg = " ".join(msg.text.split(" ")[1:])
             user.ban_by = msg.from_user.id
             user.save()
-            return f"@{msg.reply_to_message.from_user.username} был забанен по причие `{user.ban_msg}`."
+            return f"@{msg.reply_to_message.from_user.username} был забанен.\nПричина: <code>{user.ban_msg}</code>."
 
     @classmethod
     def register_user(cls, user_id):
