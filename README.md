@@ -1,7 +1,7 @@
 # RoyaltyIT-tg-bot
 <p align="center">
-    <a href="https://github.com/sssr-dev/api-server/blob/master/LICENSE"><img alt="GitHub license" src="https://img.shields.io/github/license/sssr-dev/api-server?style=for-the-badge"></a>    
-    <a href="https://github.com/sssr-dev/api-server/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/sssr-dev/api-server?style=for-the-badge"></a>    
+    <a href="https://github.com/SantaSpeen/RoyaltyIT-tg-bot/blob/master/LICENSE"><img alt="GitHub license" src="https://img.shields.io/github/license/SantaSpeen/RoyaltyIT-tg-bot?style=for-the-badge"></a>    
+    <a href="https://github.com/SantaSpeen/RoyaltyIT-tg-bot/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/SantaSpeen/RoyaltyIT-tg-bot?style=for-the-badge"></a>    
     <a href="https://github.com/SantaSpeen"><img src="https://img.santaspeen.ru/github/magic.svg" alt="magic"></a>
     <br/>
 </p>
