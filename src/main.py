@@ -1,4 +1,5 @@
 import logging
+import time
 
 from aiogram import Bot, types
 from aiogram.dispatcher import Dispatcher
@@ -14,6 +15,18 @@ log = logging.getLogger("bot core")
 bot = Bot(token=config.bot_token)
 dp = Dispatcher(bot)
 tools = Tools(config, dp)
+mute_perm = types.ChatPermissions(
+            can_send_messages=False,
+            can_send_media_messages=False,
+            can_send_polls=False,
+            can_send_other_messages=False
+        )
+unmute_perm = types.ChatPermissions(
+            can_send_messages=True,
+            can_send_media_messages=True,
+            can_send_polls=True,
+            can_send_other_messages=True
+        )
 
 
 @dp.message_handler(commands=["start"], chat_type=ChatType.PRIVATE)
@@ -82,12 +95,36 @@ async def unwarn(msg: types.Message):
 
 @dp.message_handler(regexp=r"\A(?:.|\/)(?:mute|тсс)", is_chat_admin=True, chat_type=ChatType.SUPERGROUP)
 async def mute(msg: types.Message):
-    pass
+    reply_message = msg.reply_to_message
 
+    if reply_message:
+        warn_user = reply_message.from_user
+        user_id = warn_user.id
+        user_username = warn_user.username
+
+        await msg.bot.restrict_chat_member(msg.chat.id, user_id, permissions=mute_perm)
+        message = "message"
+
+    else:
+        message = "Сначала надо выбрать пользователя."
+
+    await msg.reply(message, parse_mode=ParseMode.MARKDOWN)
 
 @dp.message_handler(regexp=r"\A(?:.|\/)(?:unmute|говори)", is_chat_admin=True, chat_type=ChatType.SUPERGROUP)
 async def unmute(msg: types.Message):
-    pass
+    reply_message = msg.reply_to_message
+
+    if reply_message:
+        warn_user = reply_message.from_user
+        user_id = warn_user.id
+        user_username = warn_user.username
+        await msg.bot.restrict_chat_member(msg.chat.id, user_id, permissions=unmute_perm)
+        message = "message"
+
+    else:
+        message = "Сначала надо выбрать пользователя."
+
+    await msg.reply(message, parse_mode=ParseMode.MARKDOWN)
 
 
 @dp.message_handler(regexp=r"\A(?:.|\/)(?:ban|бан)", is_chat_admin=True, chat_type=ChatType.SUPERGROUP)
@@ -97,16 +134,15 @@ async def ban(msg: types.Message):
     if reply_message:
 
         if len(msg.text.split(" ")) > 1:
+
             message = await tools.ban_user(msg)
 
         else:
             message = "Укажи причину бана:  `/ban [причина]`"
-
     else:
         message = "Сначала надо выбрать пользователя."
-
     if message:
-        await msg.reply(message, parse_mode=ParseMode.MARKDOWN)
+        await msg.reply(message, parse_mode=ParseMode.HTML)
 
 
 @dp.message_handler(content_types=['new_chat_members'], chat_type=ChatType.SUPERGROUP)
@@ -117,13 +153,14 @@ async def new_chat_member(msg: types.Message):
         banned, ban_msg, ban_by = tools.is_banned(user_id)
         if banned:
             await bot.send_message(msg.chat.id,
-                                   f"@{user['username']}, вы забанены [Администратором](tg://user?id={ban_by})\n",
-                                   parse_mode=ParseMode.MARKDOWN)
+                                   f'@{user["username"]}, вы забанены <a href="tg://user?id={ban_by}">Администратором</a>.\n'
+                                   f'Причина: <code>{ban_msg}</code>',
+                                   parse_mode=ParseMode.HTML)
             await bot.kick_chat_member(msg.chat.id, user_id)
         else:
             message = config.new_member_message % {
                 "username": user['username'],
-                "<": "<code>",   # Start codeblock
+                "<": "<code>",  # Start codeblock
                 "</": "</code>"  # Close codeblock
             }
             await bot.send_message(msg.chat.id, message, parse_mode=ParseMode.HTML)
