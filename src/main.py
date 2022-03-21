@@ -97,6 +97,7 @@ async def unwarn(msg: types.Message):
 
 @dp.message_handler(regexp=r"\A(?:.|\/)(?:mute|тсс)", is_chat_admin=True, chat_type=ChatType.SUPERGROUP)
 async def mute(msg: types.Message):
+    log.info(f"New message from {msg.from_user.id}(@{msg.from_user.username}) in {msg.chat.id}: '{msg.text}'")
     reply_message = msg.reply_to_message
 
     if reply_message:
@@ -128,6 +129,7 @@ async def mute(msg: types.Message):
 
 @dp.message_handler(regexp=r"\A(?:.|\/)(?:unmute|говори)", is_chat_admin=True, chat_type=ChatType.SUPERGROUP)
 async def unmute(msg: types.Message):
+    log.info(f"New message from {msg.from_user.id}(@{msg.from_user.username}) in {msg.chat.id}: '{msg.text}'")
     reply_message = msg.reply_to_message
 
     if reply_message:
@@ -142,6 +144,7 @@ async def unmute(msg: types.Message):
 
 @dp.message_handler(regexp=r"\A(?:.|\/)(?:ban|бан)", is_chat_admin=True, chat_type=ChatType.SUPERGROUP)
 async def ban(msg: types.Message):
+    log.info(f"New message from {msg.from_user.id}(@{msg.from_user.username}) in {msg.chat.id}: '{msg.text}'")
     reply_message = msg.reply_to_message
 
     if reply_message:
