@@ -24,7 +24,7 @@ if __name__ == '__main__':
     try:
         user = Users.get(Users.id == 1)
     except DoesNotExist:
-        user = Users(user_id=1292)
+        user = Users(user_id=1)
 
     user.warns += 1
     user.save()
