@@ -201,10 +201,11 @@ async def all_messages(msg: types.Message):
         elif mute_all:
             await msg.delete()
 
-    for k, v in config.static_message.items():
-        if k == text[1:len(k) + 1]:
-            await msg.reply(config.static_message[k], parse_mode=ParseMode.MARKDOWN)
-            return
+    if text:
+        for k, v in config.static_message.items():
+            if k == text[1:len(k) + 1]:
+                await msg.reply(config.static_message[k], parse_mode=ParseMode.MARKDOWN)
+                return
 
 
 if __name__ == '__main__':
