@@ -44,6 +44,17 @@ class Tools:
             user = Users(user_id=user_id)
         return user
 
+    async def set_user_permissions(self, user_id, chat_id, permissions):
+        try:
+            await self.dispatcher.bot.restrict_chat_member(chat_id, user_id, permissions=permissions)
+            return True
+        except Exception as e:
+            await self.dispatcher.bot.send_message(chat_id,
+                                                   f"Ошибка при изменении прав на [пользователе](tg://user?id={user_id}).\n"
+                                                   f"Exception: `{e}`",
+                                                   parse_mode=ParseMode.MARKDOWN)
+            return False
+
     async def kick_chat_member(self, chat_id, user_id):
         try:
             await self.dispatcher.bot.kick_chat_member(chat_id, user_id)

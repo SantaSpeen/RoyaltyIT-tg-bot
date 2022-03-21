@@ -15,6 +15,7 @@ log = logging.getLogger("bot core")
 bot = Bot(token=config.bot_token)
 dp = Dispatcher(bot)
 tools = Tools(config, dp)
+mute_all = False
 mute_perm = types.ChatPermissions(
             can_send_messages=False,
             can_send_media_messages=False,
@@ -100,15 +101,12 @@ async def mute(msg: types.Message):
     if reply_message:
         warn_user = reply_message.from_user
         user_id = warn_user.id
-        user_username = warn_user.username
-
-        await msg.bot.restrict_chat_member(msg.chat.id, user_id, permissions=mute_perm)
-        message = "message"
+        await tools.set_user_permissions(user_id, msg.chat.id, mute_perm)
 
     else:
-        message = "Сначала надо выбрать пользователя."
 
-    await msg.reply(message, parse_mode=ParseMode.MARKDOWN)
+        await msg.reply("Сначала надо выбрать пользователя.")
+
 
 @dp.message_handler(regexp=r"\A(?:.|\/)(?:unmute|говори)", is_chat_admin=True, chat_type=ChatType.SUPERGROUP)
 async def unmute(msg: types.Message):
@@ -117,14 +115,11 @@ async def unmute(msg: types.Message):
     if reply_message:
         warn_user = reply_message.from_user
         user_id = warn_user.id
-        user_username = warn_user.username
-        await msg.bot.restrict_chat_member(msg.chat.id, user_id, permissions=unmute_perm)
-        message = "message"
+        await tools.set_user_permissions(user_id, msg.chat.id, unmute_perm)
 
     else:
-        message = "Сначала надо выбрать пользователя."
 
-    await msg.reply(message, parse_mode=ParseMode.MARKDOWN)
+        await msg.reply("Сначала надо выбрать пользователя.")
 
 
 @dp.message_handler(regexp=r"\A(?:.|\/)(?:ban|бан)", is_chat_admin=True, chat_type=ChatType.SUPERGROUP)
@@ -168,13 +163,25 @@ async def new_chat_member(msg: types.Message):
 
 @dp.message_handler(content_types=['text', 'photo', 'document', 'audio', 'sticker', 'animation', 'voice', 'video_note'])
 async def all_messages(msg: types.Message):
-    text = msg.text
+    global mute_all
+    text = msg.text.lower()
     user_id = msg.from_user.id
     log.info(f"New message from {user_id}(@{msg.from_user.username}) in {msg.chat.id}: '{text}'; "
              f"Type: {msg.content_type}")
 
     if msg.chat.type in [ChatType.SUPERGROUP, ChatType.GROUP]:  # Если сообщение пришло из группы
-        pass
+
+        admins = await tools.admins
+        if user_id in admins['ids']:
+            if text == "суд идёт":
+                mute_all = True
+                await msg.reply("Да прибудет тишина!")
+            elif text == "суд окончен":
+                mute_all = False
+                await msg.reply("Говорить разрешено.")
+
+        elif mute_all:
+            await msg.delete()
 
     for k, v in config.static_message.items():
         if k == text[1:len(k) + 1]:
