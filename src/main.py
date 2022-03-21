@@ -33,6 +33,7 @@ async def bot_admins(msg: types.Message):
 
     await msg.reply(message, parse_mode=ParseMode.MARKDOWN)
 
+
 tools.bind_static_messages()
 
 if __name__ == '__main__':

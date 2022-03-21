@@ -16,7 +16,6 @@ class Config:
         self.raw_config: dict = None
 
         self.bot_token: str = None
-        self.admin_list: list = None
         self.remote_chat: int = None
 
         self.messages_object: str = None
@@ -33,6 +32,5 @@ class Config:
             raise FileNotFoundError("Cannot found config file at %s." % self.config_file)
 
         self.bot_token = self.raw_config.get("bot_token")
-        self.admin_list = self.raw_config.get("admin_list")
         self.remote_chat = self.raw_config.get("remote_chat")
         self.messages_object = self.raw_config.get("messages")
