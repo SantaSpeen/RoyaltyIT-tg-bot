@@ -52,3 +52,4 @@ class Config:
     def new_member_message(self, v):
         with open(self.raw_config['new_member_message'], "w") as f:
             f.write(v)
+        self.__new_member_message = v
