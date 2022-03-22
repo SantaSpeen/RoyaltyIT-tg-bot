@@ -29,6 +29,7 @@ unmute_perm = types.ChatPermissions(
             can_send_polls=True,
             can_send_other_messages=True
         )
+standart_hello_message = "Привет, @%(username)-s!\nДобро пожаловать в наше IT - сообщество.\nЧтобы люди могли в будущем найти тебя, напиши вступительное сообщение о себе с хештегом %(<)-s#знакомство%(</)-s.\n\nПриятного времяпрепровождения!"
 
 
 @dp.message_handler(commands=["start"], chat_type=ChatType.PRIVATE)
@@ -162,18 +163,37 @@ async def ban(msg: types.Message):
 
 
 @dp.message_handler(regexp=r"\A(?:.|\/)set", is_chat_admin=True)
-async def set_hello_mesasage(msg: types.Message):
+async def set_hello_message(msg: types.Message):
+    log.info(f"New message from {msg.from_user.id}(@{msg.from_user.username}) in {msg.chat.id}: '{msg.text}'")
     text = msg.text
     splt = text.split(" ")
     if len(splt) > 1:
 
-        config.new_member_message = " ".join(splt[1:])
-        await msg.reply("Теперь приветсвенное сообщение будет такое:")
-        await bot.send_message(msg.chat.id, config.new_member_message)
+        mode = splt[1].lower()
+
+        hello = err = None
+
+        if mode in ("default", "standart"):
+            hello = standart_hello_message
+        elif mode == "new":
+            if len(splt) > 2:
+                hello = " ".join(splt[2:])
+            else:
+                err = "`/set new [ hello message ]`"
+        elif mode == "help":
+            err = "Помощь по команде:\n1. `/set new [ hello_message ] `, - Устанавливает приветсвенное сообщене равное `hello_message`\n2. `/set default ` или ` /set standart `, - Установка стандартного сообщения"
+        else:
+            err = 'Досупные моды:  `[("default", "standart"), "new"]`'
+
+        if hello:
+            config.new_member_message = hello
+            await msg.reply("Теперь приветсвенное сообщение будет такое:")
+
+        await bot.send_message(msg.chat.id, hello or err, parse_mode=(ParseMode.MARKDOWN if err else None))
 
     else:
 
-        await msg.reply("`/set [hello message]`", parse_mode=ParseMode.MARKDOWN)
+        await msg.reply("""Применяемое форматирование:\n```\nnew_member_message % {\n\n\t"username": user['username'],\n\t"<": "<code>",   # Start codeblock\n\t"</": "</code>"  # Close codeblock\n\n}```\nПример выполнения команды:  `/set [mode] [ [message] ]`""", parse_mode=ParseMode.MARKDOWN)
 
 
 @dp.message_handler(content_types=['new_chat_members'], chat_type=ChatType.SUPERGROUP)
@@ -191,7 +211,7 @@ async def new_chat_member(msg: types.Message):
         else:
             message = config.new_member_message % {
                 "username": user['username'],
-                "<": "<code>",  # Start codeblock
+                "<": "<code>",   # Start codeblock
                 "</": "</code>"  # Close codeblock
             }
             await bot.send_message(msg.chat.id, message, parse_mode=ParseMode.HTML)
