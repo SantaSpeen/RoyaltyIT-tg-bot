@@ -8,7 +8,7 @@ class BasicModel(Model):
 
 class Users(BasicModel):
 
-    id = IntegerField(null=True)
+    id = IntegerField(null=True, primary_key=True)
     user_id = IntegerField()
     warns = IntegerField(null=True, default=0)
     muted_until = DoubleField(null=True, default=0.0)
@@ -22,7 +22,7 @@ class Users(BasicModel):
 
 class Mailing(BasicModel):
 
-    id = IntegerField(null=True)
+    id = IntegerField(null=True, primary_key=True)
     user_id = IntegerField()
     enable = BooleanField(null=True, default=True)
 
