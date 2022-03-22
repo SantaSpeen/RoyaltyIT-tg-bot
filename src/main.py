@@ -49,7 +49,7 @@ async def start(msg: types.Message):
         await msg.reply(config.start_message)
 
 
-@dp.message_handler(commands=['admins'])
+@dp.message_handler(regexp=r"^(?:.|\/)admins(?:|@RoyaltyProjectBot)$")
 async def bot_admins(msg: types.Message):
     log.info(f"New message from {msg.from_user.id}(@{msg.from_user.username}) in {msg.chat.id}: '{msg.text}'")
     message = "Администраторы нашего сообщества:\n%(owner)-s"
@@ -68,7 +68,7 @@ async def bot_admins(msg: types.Message):
     await msg.reply(message, parse_mode=ParseMode.MARKDOWN)
 
 
-@dp.message_handler(regexp=r"\A(?:.|\/)(?:warn|пред)", is_chat_admin=True, chat_type=ChatType.SUPERGROUP)
+@dp.message_handler(regexp=r"^(?:.|\/)(?:warn|пред)$", is_chat_admin=True, chat_type=ChatType.SUPERGROUP)
 async def wanr(msg: types.Message):
     log.info(f"New message from {msg.from_user.id}(@{msg.from_user.username}) in {msg.chat.id}: '{msg.text}'")
     reply_message = msg.reply_to_message
@@ -87,7 +87,7 @@ async def wanr(msg: types.Message):
         await msg.reply(message)
 
 
-@dp.message_handler(regexp=r"\A(?:.|\/)(?:reset|прости)", is_chat_admin=True, chat_type=ChatType.SUPERGROUP)
+@dp.message_handler(regexp=r"^(?:.|\/)(?:reset|прости)$", is_chat_admin=True, chat_type=ChatType.SUPERGROUP)
 async def unwarn(msg: types.Message):
     log.info(f"New message from {msg.from_user.id}(@{msg.from_user.username}) in {msg.chat.id}: '{msg.text}'")
     reply_message = msg.reply_to_message
@@ -104,7 +104,7 @@ async def unwarn(msg: types.Message):
     await msg.reply(message, parse_mode=ParseMode.MARKDOWN)
 
 
-@dp.message_handler(regexp=r"\A(?:.|\/)(?:mute|тсс)", is_chat_admin=True, chat_type=ChatType.SUPERGROUP)
+@dp.message_handler(regexp=r"^(?:.|\/)(?:mute|тсс)", is_chat_admin=True, chat_type=ChatType.SUPERGROUP)
 async def mute(msg: types.Message):
     log.info(f"New message from {msg.from_user.id}(@{msg.from_user.username}) in {msg.chat.id}: '{msg.text}'")
     reply_message = msg.reply_to_message
@@ -136,7 +136,7 @@ async def mute(msg: types.Message):
         await msg.reply("Сначала надо выбрать пользователя.")
 
 
-@dp.message_handler(regexp=r"\A(?:.|\/)(?:unmute|говори)", is_chat_admin=True, chat_type=ChatType.SUPERGROUP)
+@dp.message_handler(regexp=r"^(?:.|\/)(?:unmute|говори)$", is_chat_admin=True, chat_type=ChatType.SUPERGROUP)
 async def unmute(msg: types.Message):
     log.info(f"New message from {msg.from_user.id}(@{msg.from_user.username}) in {msg.chat.id}: '{msg.text}'")
     reply_message = msg.reply_to_message
@@ -151,7 +151,7 @@ async def unmute(msg: types.Message):
         await msg.reply("Сначала надо выбрать пользователя.")
 
 
-@dp.message_handler(regexp=r"\A(?:.|\/)(?:ban|бан)", is_chat_admin=True, chat_type=ChatType.SUPERGROUP)
+@dp.message_handler(regexp=r"^(?:.|\/)(?:ban|бан)", is_chat_admin=True, chat_type=ChatType.SUPERGROUP)
 async def ban(msg: types.Message):
     log.info(f"New message from {msg.from_user.id}(@{msg.from_user.username}) in {msg.chat.id}: '{msg.text}'")
     reply_message = msg.reply_to_message
@@ -170,7 +170,7 @@ async def ban(msg: types.Message):
         await msg.reply(message, parse_mode=ParseMode.HTML)
 
 
-@dp.message_handler(regexp=r"\A(?:.|\/)set", is_chat_admin=True)
+@dp.message_handler(regexp=r"^(?:.|\/)set", is_chat_admin=True)
 async def set_hello_message(msg: types.Message):
     log.info(f"New message from {msg.from_user.id}(@{msg.from_user.username}) in {msg.chat.id}: '{msg.text}'")
     text = msg.text
