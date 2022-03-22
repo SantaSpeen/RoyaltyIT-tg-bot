@@ -162,16 +162,18 @@ async def ban(msg: types.Message):
 
 
 @dp.message_handler(regexp=r"\A(?:.|\/)set", is_chat_admin=True)
-def set_hello_mesasage(msg: types.Message):
+async def set_hello_mesasage(msg: types.Message):
     text = msg.text
     splt = text.split(" ")
     if len(splt) > 1:
 
-        config.new_member_message = splt[1:]
+        config.new_member_message = " ".join(splt[1:])
+        await msg.reply("Теперь приветсвенное сообщение будет такое:")
+        await bot.send_message(msg.chat.id, config.new_member_message)
 
     else:
 
-        msg.reply("`/set [hello message]`", parse_mode=ParseMode.MARKDOWN)
+        await msg.reply("`/set [hello message]`", parse_mode=ParseMode.MARKDOWN)
 
 
 @dp.message_handler(content_types=['new_chat_members'], chat_type=ChatType.SUPERGROUP)
