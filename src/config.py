@@ -23,6 +23,7 @@ class Config:
         self.static_message: dict = None
 
         self.__new_member_message: dict = None
+        self.standart_start_message: str = None
 
         self._read_config()
 
@@ -40,16 +41,17 @@ class Config:
         self.messages_object = self.raw_config.get("messages")
         self.start_message = self.raw_config.get("start_message")
         self.static_message = self.raw_config.get("static_message")
+        self.standart_start_message = self.raw_config.get("standart_start_message")
 
     @property
     def new_member_message(self) -> str:
         if not self.__new_member_message:
-            with open(self.raw_config['new_member_message']) as f:
+            with open(self.raw_config['file_start_message']) as f:
                 self.__new_member_message = f.read()
         return self.__new_member_message
 
     @new_member_message.setter
     def new_member_message(self, v):
-        with open(self.raw_config['new_member_message'], "w") as f:
+        with open(self.raw_config['file_start_message'], "w") as f:
             f.write(v)
         self.__new_member_message = v
