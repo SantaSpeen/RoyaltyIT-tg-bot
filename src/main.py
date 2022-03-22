@@ -161,6 +161,19 @@ async def ban(msg: types.Message):
         await msg.reply(message, parse_mode=ParseMode.HTML)
 
 
+@dp.message_handler(regexp=r"\A(?:.|\/)set", is_chat_admin=True)
+def set_hello_mesasage(msg: types.Message):
+    text = msg.text
+    splt = text.split(" ")
+    if len(splt) > 1:
+
+        config.new_member_message = splt[1:]
+
+    else:
+
+        msg.reply("`/set [hello message]`", parse_mode=ParseMode.MARKDOWN)
+
+
 @dp.message_handler(content_types=['new_chat_members'], chat_type=ChatType.SUPERGROUP)
 async def new_chat_member(msg: types.Message):
     for user in msg.new_chat_members:
