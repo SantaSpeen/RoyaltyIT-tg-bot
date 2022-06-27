@@ -18,17 +18,17 @@ dp = Dispatcher(bot)
 tools = Tools(config, dp)
 mute_all = False
 mute_perm = types.ChatPermissions(
-            can_send_messages=False,
-            can_send_media_messages=False,
-            can_send_polls=False,
-            can_send_other_messages=False
-        )
+    can_send_messages=False,
+    can_send_media_messages=False,
+    can_send_polls=False,
+    can_send_other_messages=False
+)
 unmute_perm = types.ChatPermissions(
-            can_send_messages=True,
-            can_send_media_messages=True,
-            can_send_polls=True,
-            can_send_other_messages=True
-        )
+    can_send_messages=True,
+    can_send_media_messages=True,
+    can_send_polls=True,
+    can_send_other_messages=True
+)
 formating = """
 ```
 new_member_message % {
@@ -119,15 +119,18 @@ async def mute(msg: types.Message):
                 for word in splt:
                     word: str
                     if word.endswith("d"):
-                        c += int(word[:len(word)-1]) * 24 * 60 * 60
+                        c += int(word[:len(word) - 1]) * 24 * 60 * 60
                     elif word.endswith("h"):
-                        c += int(word[:len(word)-1]) * 60 * 60
+                        c += int(word[:len(word) - 1]) * 60 * 60
                     elif word.endswith("m"):
-                        c += int(word[:len(word)-1]) * 60
+                        c += int(word[:len(word) - 1]) * 60
                     elif word.endswith("s"):
-                        c += int(word[:len(word)-1])
+                        c += int(word[:len(word) - 1])
                 tools.set_mute(user_id, c)
                 await tools.set_user_permissions(user_id, msg.chat.id, mute_perm)
+                await msg.reply(
+                    f"""<a href="tg://user?id={user_id}">Пользователь</a> будет молчать до <code>{c}</code>""" +
+                    "секунды по UnixTime.", parse_mode=ParseMode.HTML)
             except Exception as e:
                 await msg.reply(f"Exception:  <code>{e}</code>", parse_mode=ParseMode.HTML)
         else:
@@ -182,7 +185,7 @@ async def set_hello_message(msg: types.Message):
         hello = err = None
 
         if mode in ("default", "standart"):
-            hello = config.standart_start_message
+            hello = config.standard_start_message
         elif mode == "new":
             if len(splt) > 2:
                 hello = " ".join(splt[2:])
@@ -219,7 +222,7 @@ async def new_chat_member(msg: types.Message):
         else:
             message = config.new_member_message % {
                 "username": user['username'],
-                "<": "<code>",   # Start codeblock
+                "<": "<code>",  # Start codeblock
                 "</": "</code>"  # Close codeblock
             }
             await bot.send_message(msg.chat.id, message, parse_mode=ParseMode.HTML)
