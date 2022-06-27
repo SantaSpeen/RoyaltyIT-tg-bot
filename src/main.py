@@ -192,7 +192,10 @@ async def set_hello_message(msg: types.Message):
             else:
                 err = "`/set new [ hello message ]`"
         elif mode == "help":
-            err = f"Форматировние:{formating}Помощь по команде:\n1. `/set new [ hello_message ] `, - Устанавливает приветсвенное сообщене равное `hello_message`\n2. `/set [ default, standart ] `, - Установка стандартного сообщения\n3. `/set help `, - Вывод этого сообщения"
+            err = f"Форматировние:{formating}Помощь по команде:\n" \
+                  f"1. `/set new [ hello_message ] `, - Устанавливает приветсвенное сообщене равное `hello_message`\n" \
+                  f"2. `/set [ default, standart ] `, - Установка стандартного сообщения\n" \
+                  f"3. `/set help `, - Вывод этого сообщения"
         else:
             err = 'Досупные моды:  `["help", ("default", "standart"), "new"]`'
 
@@ -215,8 +218,8 @@ async def new_chat_member(msg: types.Message):
         banned, ban_msg, ban_by = tools.is_banned(user_id)
         if banned:
             await bot.send_message(msg.chat.id,
-                                   f'@{user["username"]}, вы забанены <a href="tg://user?id={ban_by}">Администратором</a>.\n'
-                                   f'Причина: <code>{ban_msg}</code>',
+                                   f'@{user["username"]}, вы забанены <a href="tg://user?id={ban_by}">'
+                                   f'Администратором</a>.\n Причина: <code>{ban_msg}</code>',
                                    parse_mode=ParseMode.HTML)
             await bot.kick_chat_member(msg.chat.id, user_id)
         else:

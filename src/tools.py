@@ -3,7 +3,7 @@ import time
 
 import aiogram
 from aiogram.types import ParseMode
-from peewee import DoesNotExist, ModelObjectCursorWrapper
+from peewee import DoesNotExist
 
 from SqlModels import Users, Mailing
 from config import Config
@@ -60,8 +60,8 @@ class Tools:
             return True
         except Exception as e:
             await self.dispatcher.bot.send_message(chat_id,
-                                                   f"Ошибка при изменении прав на [пользователе](tg://user?id={user_id}).\n"
-                                                   f"Exception: `{e}`",
+                                                   f"Ошибка при изменении прав на \
+                                                   [пользователе](tg://user?id={user_id}).\n Exception: `{e}`",
                                                    parse_mode=ParseMode.MARKDOWN)
             return False
 
@@ -143,4 +143,3 @@ class Tools:
             Mailing(user_id=user_id).save()
 
         return registered
-
