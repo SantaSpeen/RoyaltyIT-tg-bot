@@ -44,7 +44,7 @@ class Config:
         self.standard_start_message = self.raw_config.get("standard_start_message")
 
         if self.remote_chat >= 0:
-            print(f"WARNING {self.remote_chat=}")
+            print(f"WARNING self.remote_chat={self.remote_chat}")
 
     @property
     def new_member_message(self) -> str:
