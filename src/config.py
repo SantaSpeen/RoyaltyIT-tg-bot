@@ -23,7 +23,7 @@ class Config:
         self.static_message: dict = None
 
         self.__new_member_message: dict = None
-        self.standart_start_message: str = None
+        self.standard_start_message: str = None
 
         self._read_config()
 
@@ -31,7 +31,7 @@ class Config:
         self.debug("_read_config(self)")
         if os.path.isfile(self.config_file):
             self.log.info(f"Config file: %s - found" % self.config_file)
-            with open(self.config_file, 'r') as f:
+            with open(self.config_file, 'r', encoding='utf-8') as f:
                 self.raw_config = json.load(f)
         else:
             raise FileNotFoundError("Cannot found config file at %s." % self.config_file)
@@ -41,7 +41,7 @@ class Config:
         self.messages_object = self.raw_config.get("messages")
         self.start_message = self.raw_config.get("start_message")
         self.static_message = self.raw_config.get("static_message")
-        self.standart_start_message = self.raw_config.get("standart_start_message")
+        self.standard_start_message = self.raw_config.get("standard_start_message")
 
         if self.remote_chat >= 0:
             print(f"WARNING {self.remote_chat=}")
@@ -49,12 +49,12 @@ class Config:
     @property
     def new_member_message(self) -> str:
         if not self.__new_member_message:
-            with open(self.raw_config['file_start_message']) as f:
+            with open(self.raw_config['file_start_message'], encoding="utf-8") as f:
                 self.__new_member_message = f.read()
         return self.__new_member_message
 
     @new_member_message.setter
     def new_member_message(self, v):
-        with open(self.raw_config['file_start_message'], "w") as f:
+        with open(self.raw_config['file_start_message'], "w", encoding="utf-8") as f:
             f.write(v)
         self.__new_member_message = v
